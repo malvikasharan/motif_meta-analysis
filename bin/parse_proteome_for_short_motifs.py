@@ -64,15 +64,16 @@ def create_out_file(out_file, disorder_coordinate_dict,
                             'End', 'Order-Disorder', 'SQ', 'TQ', 'QS', 'QT'])
         out_fh.write(header+'\n')
         for each_id in disorder_coordinate_dict.keys():
+            for disorder_entry in disorder_coordinate_dict[each_id]:
+                disorder_seq = disorder_entry.split('\t')[1]
+                if not disorder_seq == '':
+                    motif_disorder_list = check_motif_occurance(disorder_seq, motif_list)
+                    out_fh.write(disorder_entry+'\t'.join(map(str, motif_disorder_list))+'\n')
             for order_entry in order_coordinate_dict[each_id]:
                 order_seq = order_entry.split('\t')[1]
                 if not order_seq == '':
                     motif_order_list = check_motif_occurance(order_seq, motif_list)
                     out_fh.write(order_entry+'\t'.join(map(str, motif_order_list))+'\n')
-            for disorder_entry in disorder_coordinate_dict[each_id]:
-                disorder_seq = disorder_entry.split('\t')[1]
-                motif_disorder_list = check_motif_occurance(disorder_seq, motif_list)
-                out_fh.write(disorder_entry+'\t'.join(map(str, motif_order_list))+'\n')
 
 def check_motif_occurance(sequence_entry, motif_list):
     motif_occur_list = []
