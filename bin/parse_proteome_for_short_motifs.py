@@ -25,9 +25,9 @@ def get_doisorder_coordinates(disorder_uid_dict):
 def parse_complete_proteome(proteome_data_dict, disorder_coordinate_dict):
     order_coordinate_dict = {}
     for prot_id in proteome_data_dict.keys():
+        prot_seq = proteome_data_dict[prot_id]
+        prot_len = len(prot_seq)
         if prot_id in disorder_coordinate_dict.keys():
-            prot_seq = proteome_data_dict[prot_id]
-            prot_len = len(prot_seq)
             for i, each_disorder in enumerate(disorder_coordinate_dict[prot_id]):
                 start_coordinate = int(each_disorder.split('\t')[2])
                 end_coordinate = int(each_disorder.split('\t')[3])
@@ -50,6 +50,11 @@ def parse_complete_proteome(proteome_data_dict, disorder_coordinate_dict):
                     order_coordinate_dict.setdefault(
                     prot_id, []).append("%s\t%s\t%s\t%s\tOrder\t" % (
                     prot_id, order_seq, last_coordinate, start_coordinate))
+                if len(disorder_coordinate_dict[prot_id]) == 1:
+                    order_seq = prot_seq[end_coordinate:prot_len]
+                    order_coordinate_dict.setdefault(
+                    prot_id, []).append("%s\t%s\t%s\t%s\tOrder\t" % (
+                    prot_id, order_seq, end_coordinate, prot_len))
     return order_coordinate_dict
                     
 def create_out_file(out_file, disorder_coordinate_dict,
@@ -61,8 +66,9 @@ def create_out_file(out_file, disorder_coordinate_dict,
         for each_id in disorder_coordinate_dict.keys():
             for order_entry in order_coordinate_dict[each_id]:
                 order_seq = order_entry.split('\t')[1]
-                motif_order_list = check_motif_occurance(order_seq, motif_list)
-                out_fh.write(order_entry+'\t'.join(map(str, motif_order_list))+'\n')
+                if not order_seq == '':
+                    motif_order_list = check_motif_occurance(order_seq, motif_list)
+                    out_fh.write(order_entry+'\t'.join(map(str, motif_order_list))+'\n')
             for disorder_entry in disorder_coordinate_dict[each_id]:
                 disorder_seq = disorder_entry.split('\t')[1]
                 motif_disorder_list = check_motif_occurance(disorder_seq, motif_list)
